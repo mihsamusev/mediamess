@@ -17,10 +17,14 @@ fn main() -> io::Result<()> {
         &target_folder.exists()
     );
 
-    for entry in fs::read_dir(target_folder)? {
-        if let Ok(dir_entry) = entry {
-            println!("{:?}", dir_entry.path())
-        }
+    let file_paths: Vec<PathBuf> = fs::read_dir(target_folder)?
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .collect();
+
+    for p in file_paths {
+        println!("{:?}", p)
     }
 
     Ok(())
