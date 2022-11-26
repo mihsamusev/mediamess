@@ -13,9 +13,6 @@ If the media folder exists already, just move files there
 
 ```shell
 mediamess organize ./
+- splits everything into pre-defined paths `/img` `/vid` `/gif`
+- no lookup that folder already has file with the same anme before move ops
 ```
-
-## additional
-
-- configure target folder and media types
-- dry run

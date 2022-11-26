@@ -1,5 +1,4 @@
-use glob::glob;
-//use mediamess;
+use mediamess;
 use std::path::PathBuf;
 use std::{env, fs, io};
 
@@ -10,21 +9,36 @@ fn get_target_folder() -> PathBuf {
 }
 
 fn main() -> io::Result<()> {
-    let target_folder = get_target_folder();
+    // check if target folder exists?
+    let source_folder = get_target_folder();
     println!(
         "{:?} exists ? {:?}",
-        &target_folder,
-        &target_folder.exists()
+        &source_folder,
+        &source_folder.exists()
     );
 
-    let file_paths: Vec<PathBuf> = fs::read_dir(target_folder)?
+    // check if media folders already exist? Otherwise create them
+    let target_folder = PathBuf::from("");
+
+    // need only files from source folder
+    let file_paths: Vec<PathBuf> = fs::read_dir(source_folder)?
         .into_iter()
         .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_ok())
+        .filter(|e| e.file_type().unwrap().is_file())
         .map(|e| e.path())
         .collect();
 
-    for p in file_paths {
+    for p in file_paths.iter() {
         println!("{:?}", p)
+    }
+
+    let image_paths = mediamess::select_images(&file_paths);
+
+    println!("images: ");
+    for path in image_paths.iter() {
+        let rebased_path = mediamess::rebase_path_root(path, &target_folder);
+        println!("{:?} -> {:?}", path, rebased_path);
     }
 
     Ok(())
