@@ -1,4 +1,4 @@
-use mediamess;
+use mediamess::{self, MediaType};
 use std::path::PathBuf;
 use std::{env, fs, io};
 
@@ -33,12 +33,20 @@ fn main() -> io::Result<()> {
         println!("{:?}", p)
     }
 
-    let image_paths = mediamess::select_images(&file_paths);
+    let mediatypes = [MediaType::Image, MediaType::Gif, MediaType::Video];
 
-    println!("images: ");
-    for path in image_paths.iter() {
-        let rebased_path = mediamess::rebase_path_root(path, &target_folder);
-        println!("{:?} -> {:?}", path, rebased_path);
+    for mediatype in mediatypes {
+        let paths = mediamess::select_by_mediatype(&file_paths, mediatype);
+
+        // header
+        println!("{:?}:", mediatype);
+
+        // all apths
+        for path in paths.iter() {
+            //let rebased_path = mediamess::rebase_path_root(path, &target_folder);
+            //println!("{:?} -> {:?}", path, rebased_path);
+            println!(" - {:?}", path);
+        }
     }
 
     Ok(())
