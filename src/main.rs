@@ -1,4 +1,4 @@
-use mediamess::{self, MediaType};
+use packmedia::{self, MediaType};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{env, fs, io};
@@ -62,7 +62,7 @@ fn main() -> io::Result<()> {
         }
 
         // get paths fit for that folder
-        let paths = mediamess::select_by_mediatype(&file_paths, mediatype);
+        let paths = packmedia::select_by_mediatype(&file_paths, mediatype);
 
         // header
         println!(
@@ -73,7 +73,7 @@ fn main() -> io::Result<()> {
         );
 
         // all apths
-        for filename in mediamess::truncate_basepath(&paths) {
+        for filename in packmedia::truncate_basepath(&paths) {
             //let rebased_path = mediamess::rebase_path_root(path, &target_folder);
             //println!("{:?} -> {:?}", path, rebased_path);
             let mut new_path = new_media_path.clone();
@@ -85,7 +85,7 @@ fn main() -> io::Result<()> {
             println!(" - {:?} --> {:?}", old_path, new_path);
 
             if !config.dry_run {
-                mediamess::move_path(old_path, new_path)?;
+                packmedia::move_path(old_path, new_path)?;
             }
         }
     }
