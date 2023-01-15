@@ -1,23 +1,34 @@
 use packmedia::{self, MediaType};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::{env, fs, io};
+use std::{fs, io};
+use clap::Parser;
+
+const IMAGE_FOLDER: &str = "img";
+const VIDEO_FOLDER: &str = "vid";
+const GIF_FOLDER: &str = "gif";
+
+#[derive(Parser)]
+struct Cli {
+    /// folder where media files are to be found
+    source_folder: PathBuf,
+
+    /// dont move files just show what will be moved
+    #[arg(short, long)]
+    dry_run: bool,
+}
 
 struct Config {
-    dry_run: bool,
-    source_folder: PathBuf,
     media_folders: HashMap<MediaType, &'static str>,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            dry_run: true,
-            source_folder: get_default_folder(),
             media_folders: vec![
-                (MediaType::Image, "img"),
-                (MediaType::Video, "vid"),
-                (MediaType::Gif, "gif"),
+                (MediaType::Image, IMAGE_FOLDER),
+                (MediaType::Video, VIDEO_FOLDER),
+                (MediaType::Gif, GIF_FOLDER),
             ]
             .into_iter()
             .collect(),
@@ -25,21 +36,13 @@ impl Default for Config {
     }
 }
 
-fn get_default_folder() -> PathBuf {
-    let home_folder = env::var("HOME").unwrap();
-    let target_folder = [home_folder, String::from("Downloads")].iter().collect();
-    target_folder
-}
-
 fn main() -> io::Result<()> {
-    // check if target folder exists?
+    let args = Cli::parse();
     let config = Config::default();
-    //println!("{}", config);
 
-    // check if media folders already exist? Otherwise create them
-
+    // check if media folders already exist? Otherwise create the
     // need only filenames, stripped from paths
-    let file_paths: Vec<PathBuf> = fs::read_dir(&config.source_folder)?
+    let file_paths: Vec<PathBuf> = fs::read_dir(&args.source_folder)?
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_ok())
@@ -47,17 +50,13 @@ fn main() -> io::Result<()> {
         .map(|e| e.path())
         .collect();
 
-    // for p in file_paths.iter() {
-    //     println!("{:?}", p)
-    // }
-
+    // 
     for (&mediatype, &mediafolder) in config.media_folders.iter() {
-        // build folder path
-        let mut new_media_path = PathBuf::from(&config.source_folder);
+        // build folder paths
+        let mut new_media_path = PathBuf::from(&args.source_folder);
         new_media_path.push(mediafolder);
 
-        // create dirs if they dont exist
-        if !new_media_path.exists() {
+        if !new_media_path.exists() & !args.dry_run {
             fs::create_dir_all(&new_media_path)?;
         }
 
@@ -74,17 +73,15 @@ fn main() -> io::Result<()> {
 
         // all apths
         for filename in packmedia::truncate_basepath(&paths) {
-            //let rebased_path = mediamess::rebase_path_root(path, &target_folder);
-            //println!("{:?} -> {:?}", path, rebased_path);
             let mut new_path = new_media_path.clone();
             new_path.push(&filename);
 
-            let mut old_path = config.source_folder.clone();
+            let mut old_path = args.source_folder.clone();
             old_path.push(&filename);
 
             println!(" - {:?} --> {:?}", old_path, new_path);
 
-            if !config.dry_run {
+            if !args.dry_run {
                 packmedia::move_path(old_path, new_path)?;
             }
         }

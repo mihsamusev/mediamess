@@ -42,10 +42,7 @@ pub fn classify_mediatype<P: AsRef<Path>>(path: P) -> Option<MediaType> {
     match path.as_ref().extension().and_then(OsStr::to_str) {
         Some(ext) => {
             let lower = ext.to_lowercase();
-            match EXTENSIONS.get(lower.as_str()) {
-                Some(e) => Some(*e),
-                None => None,
-            }
+            EXTENSIONS.get(lower.as_str()).cloned()
         }
         None => None,
     }
@@ -71,9 +68,9 @@ pub fn select_by_mediatype(paths: &[PathBuf], mediatype: MediaType) -> Vec<PathB
 // the flie exists
 pub fn truncate_basepath(paths: &[PathBuf]) -> Vec<PathBuf> {
     paths
-        .into_iter()
+        .iter()
         .filter_map(|p| p.file_name().and_then(OsStr::to_str))
-        .map(|p| PathBuf::from(p))
+        .map(PathBuf::from)
         .collect()
 }
 
