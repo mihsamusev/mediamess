@@ -1,4 +1,8 @@
 ## Purpose
+Dumb clone of already existing command line combo
+```
+mkdir img && mv *.{png,jpg,jpeg} img/
+```
 
 organize media files in given `./folder/` into
 
